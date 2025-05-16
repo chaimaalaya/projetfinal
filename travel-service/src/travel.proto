@@ -1,0 +1,32 @@
+syntax = "proto3";
+
+package travel;
+
+service TravelService {
+  rpc PostTravel (travelRequest) returns (travelResponse);
+  rpc GetTravel (TravelId) returns (travelResponse);
+  rpc GetAllTravels (Empty) returns (travelListResponse);
+}
+
+message travelRequest {
+  string weather = 1;
+  string name = 2;
+  string type = 3;
+}
+
+message TravelId {
+  string id = 1;
+}
+
+message travelResponse {
+  string id = 1;
+  string weather = 2;
+  string name = 3;
+  string type = 4;
+}
+
+message Empty {} 
+
+message travelListResponse {
+  repeated travelResponse travels = 1;
+}

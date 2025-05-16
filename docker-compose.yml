@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 22181  # Port modifié ici
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "22181:22181"  # Port exposé changé ici aussi
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - "29092:9092" 
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:22181  # Port zookeeper mis à jour ici
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+    depends_on:
+      - kafka
+      - service_user
+      - travel-service
+      - recommendation
+    ports:
+      - "4000:4000"
+    environment:
+      KAFKA_BROKERS: kafka:29092
+
+  recommendation:
+    build:
+      context: ./recommandation
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_BROKERS: kafka:29092
+
+  service_user:
+    build:
+      context: ./service_user
+    ports:
+      - "5000:5000"
+
+  travel-service:
+    build:
+      context: ./travel-service
+    ports:
+      - "6000:6000"
